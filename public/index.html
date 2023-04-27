@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>My Favorite Links</title>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  </head>
+  <body>
+    <h1>My Favorite Links</h1>
+    <table>
+      <tr>
+        <th>Name</th>
+        <th>URL</th>
+        <th>Actions</th>
+      </tr>
+      <tbody id="links-table-body">
+      </tbody>
+    </table>
+    <br>
+    <h2>Add a new url with a name and link to the table.</h2>
+    <form id="new-link-form">
+      <label for="name">Name:</label>
+      <input type="text" id="name" name="name">
+      <br>
+      <label for="url">URL:</label>
+      <input type="text" id="url" name="url">
+      <br>
+      <button type="submit">Add New Link</button>
+    </form>
+    <br>
+    <script>
+      const linksTableBody = document.getElementById('links-table-body');
+
+      // Function to render the links table
+      function renderLinksTable(links) {
+        linksTableBody.innerHTML = '';
+        links.forEach(link => {
+          const linkRow = `
+            <tr>
+              <td>${link.name}</td>
+              <td><a href="${link.url}" target="_blank">${link.url}</a></td>
+              <td>
+                <button onclick="deleteLink(${link.id})">Delete</button>
+                <button onclick="editLink(${link.id})">Edit</button>
+              </td>
+            </tr>
+          `;
+          linksTableBody.innerHTML += linkRow;
+        });
+      }
+
+      // Function to retrieve all links
+      function getLinks() {
+        axios.get('/links')
+          .then(function (response) {
+            renderLinksTable(response.data);
+          })
+          .catch(function (error) {
+            console.error(error);
+          });
+      }
+
+      // Function to add a new link
+      const newLinkForm = document.getElementById('new-link-form');
+      newLinkForm.addEventListener('submit', function (event) {
+        event.preventDefault();
+        const name = document.getElementById('name').value;
+        const url = document.getElementById('url').value;
+        axios.post('/links', { name, url })
+          .then(function (response) {
+            console.log(response);
+            console.log(name, url);
+            getLinks();
+          })
+          .catch(function (error) {
+            console.error(error);
+          });
+      });
+
+      // Function to delete a link by id
+      function deleteLink(id) {
+        axios.delete(`/links/${id}`)
+          .then(function (response) {
+            console.log(response);
+            getLinks();
+          })
+          .catch(function (error) {
+            console.error(error);
+          });
+      }
+
+      // Function to edit a link by id
+      function editLink(id) {
+        const name = prompt('Enter the new name:');
+        const url = prompt('Enter the new URL:');
+        axios.put(`/links/${id}`, { name, url })
+          .then(function (response) {
+            console.log(response);
+            getLinks();
+          })
+          .catch(function (error) {
+            console.error(error);
+          });
+      }
+
+      // Initial function call to retrieve all links
+      getLinks();
+    </script>
+  </body>
+</html>
+``
